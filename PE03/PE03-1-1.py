@@ -51,17 +51,17 @@ try:
                 g_on = not g_on
         GPIO.output(ledGreenPin, g_on)
 
-        # 亮要按下，灭要松开
+        # 亮只需按下，灭却等松开
         if GPIO.input(butBluePin):
             if b_state:
                 b_state = False
-                if not b_on:
-                    b_on = True
+                if b_on:
+                    b_on = False
         else:
             if not b_state:
                 b_state = True
-                if b_on:
-                    b_on = False
+                if not b_on:
+                    b_on = True
         GPIO.output(ledBluePin, b_on)
 
         time.sleep(0.1)
