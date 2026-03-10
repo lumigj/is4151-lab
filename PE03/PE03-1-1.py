@@ -24,9 +24,14 @@ print("Program running... Press CTRL+C to exit")
 r_state = False
 r_on = False
 
+g_state = False
 g_on = False
+
+b_state = False
+b_on = False
 try:
     while True:
+        # 松开才改
         if GPIO.input(butRedPin):
             if r_state:
                 r_state = False
@@ -36,16 +41,28 @@ try:
                 r_state = True
         GPIO.output(ledRedPin, r_on)
 
+        # 按下就改
         if GPIO.input(butGreenPin):
-            pass
+            if g_state:
+                g_state = False
         else:
-            g_on = not g_on
-        GPIO.output(ledGreenPin, r_on)
+            if not g_state:
+                g_state = True
+                gon_on = not g_on
+        GPIO.output(ledGreenPin, g_on)
 
+        # 亮要按下，灭要松开
         if GPIO.input(butBluePin):
-            GPIO.output(ledBluePin, False)
+            if b_state:
+                b_state = False
+                if not b_on:
+                    b_on = True
         else:
-            GPIO.output(ledBluePin, True)
+            if not b_state:
+                b_state = True
+                if b_on:
+                    b_on = False
+        GPIO.output(ledBluePin, b_on)
 
         time.sleep(0.1)
 
