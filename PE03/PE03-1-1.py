@@ -29,11 +29,10 @@ try:
             if r_state:
                 r_state = False
                 r_on = not r_on
-            GPIO.output(ledRedPin, False)
         else:
             if not r_state:
                 r_state = True
-            GPIO.output(ledRedPin, True)
+        GPIO.output(ledRedPin, r_on)
 
         if GPIO.input(butGreenPin):
             GPIO.output(ledGreenPin, False)
