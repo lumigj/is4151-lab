@@ -23,6 +23,8 @@ print("Program running... Press CTRL+C to exit")
 
 r_state = False
 r_on = False
+
+g_on = False
 try:
     while True:
         if GPIO.input(butRedPin):
@@ -35,9 +37,10 @@ try:
         GPIO.output(ledRedPin, r_on)
 
         if GPIO.input(butGreenPin):
-            GPIO.output(ledGreenPin, False)
+            pass
         else:
-            GPIO.output(ledGreenPin, True)
+            g_on = not g_on
+        GPIO.output(ledGreenPin, r_on)
 
         if GPIO.input(butBluePin):
             GPIO.output(ledBluePin, False)
