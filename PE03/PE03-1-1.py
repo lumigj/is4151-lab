@@ -48,7 +48,7 @@ try:
         else:
             if not g_state:
                 g_state = True
-                gon_on = not g_on
+                g_on = not g_on
         GPIO.output(ledGreenPin, g_on)
 
         # 亮要按下，灭要松开
