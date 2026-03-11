@@ -90,6 +90,10 @@ try:
                     GPIO.output(ledBluePin, False)
                 else:
                     f_step = 0
+                    #既然把normal mode每次都改电平的方式换了，那就在这里revert回去
+                    GPIO.output(ledRedPin, r_on)
+                    GPIO.output(ledGreenPin, g_on)
+                    GPIO.output(ledBluePin, b_on)
         else:
             if not f_state:
                 f_state = True
