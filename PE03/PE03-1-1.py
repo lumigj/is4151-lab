@@ -40,41 +40,41 @@ c = 0
 try:
     while True:
         # 松开才改
-        if f_step == 0:
-            if GPIO.input(butRedPin):
-                if r_state:
-                    r_state = False
-                    r_on = not r_on
-            else:
-                if not r_state:
-                    r_state = True
-            GPIO.output(ledRedPin, r_on)
+        if GPIO.input(butRedPin):
+            if r_state:
+                r_state = False
+                r_on = not r_on
+                GPIO.output(ledRedPin, r_on)
+        else:
+            if not r_state:
+                r_state = True
 
-            # 按下就改
-            if GPIO.input(butGreenPin):
-                if g_state:
-                    g_state = False
-            else:
-                if not g_state:
-                    g_state = True
-                    g_on = not g_on
-            GPIO.output(ledGreenPin, g_on)
+        # 按下就改
+        if GPIO.input(butGreenPin):
+            if g_state:
+                g_state = False
+        else:
+            if not g_state:
+                g_state = True
+                g_on = not g_on
+                GPIO.output(ledGreenPin, g_on)
 
-            # 亮只需按下，灭却等松开
-            if GPIO.input(butBluePin):
-                if b_state:
-                    b_state = False
-                    if b_wait_off:
-                        b_on = False
-                        b_wait_off = False
-            else:
-                if not b_state:
-                    b_state = True
-                    if b_on:
-                        b_wait_off = True
-                    else:
-                        b_on = True
-            GPIO.output(ledBluePin, b_on)
+        # 亮只需按下，灭却等松开
+        if GPIO.input(butBluePin):
+            if b_state:
+                b_state = False
+                if b_wait_off:
+                    b_wait_off = False
+                    b_on = False
+                    GPIO.output(ledBluePin, b_on)
+        else:
+            if not b_state:
+                b_state = True
+                if b_on:
+                    b_wait_off = True
+                else:
+                    b_on = True
+                    GPIO.output(ledBluePin, b_on)
 
 
         if GPIO.input(butFourthPin):
