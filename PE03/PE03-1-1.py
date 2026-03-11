@@ -29,6 +29,7 @@ g_on = False
 
 b_state = False
 b_on = False
+b_wait_off = False
 try:
     while True:
         # 松开才改
@@ -55,12 +56,15 @@ try:
         if GPIO.input(butBluePin):
             if b_state:
                 b_state = False
-                if b_on:
+                if b_wait_off:
                     b_on = False
+                    b_wait_off = False
         else:
             if not b_state:
                 b_state = True
-                if not b_on:
+                if b_on:
+                    b_wait_off = True
+                else:
                     b_on = True
         GPIO.output(ledBluePin, b_on)
 
