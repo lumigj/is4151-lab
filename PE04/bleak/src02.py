@@ -21,9 +21,9 @@ async def main():
 
 		address = util.normalizeBleAddress(device.address)
 
-		if address == 'E9:01:B2:1A:C5:4E':
+		if address == 'F1:B1:2E:B3:CC:5B':
 
-			print('Found BBC micro:bit [vavet]: {}'.format(address))
+			print('Found BBC micro:bit [vivaz]: {}'.format(address))
 			found_address = address
 			break
 
