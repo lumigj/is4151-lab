@@ -1,0 +1,81 @@
+# demo temperature service
+
+
+
+import asyncio
+import traceback
+from bleak import BleakScanner
+
+import util
+from bleuartlib import BleUartDevice
+
+
+
+def bleTemperatureReceiveCallback(data):
+
+	print('Received data = {}'.format(data))
+
+
+
+async def main():
+
+	bleUartDevice1 = None
+	found_address = None
+
+	print('********** Initiating device discovery......')
+
+	devices = await BleakScanner.discover(timeout=2.0)
+
+	for device in devices:
+
+		address = util.normalizeBleAddress(device.address)
+
+		if address == 'E9:01:B2:1A:C5:4E':
+
+			print('Found BBC micro:bit [vavet]: {}'.format(address))
+			found_address = address
+			break
+
+	if found_address is None:
+		print('********** UNKNOWN ERROR')
+		return
+
+	try:
+
+		bleUartDevice1 = BleUartDevice(found_address)
+		await bleUartDevice1.connect()
+		print('Connected to micro:bit device')
+
+		await bleUartDevice1.enable_temperature_receive(bleTemperatureReceiveCallback)
+		print('Receiving data...')
+
+		while True:
+			await asyncio.sleep(1)
+
+	except KeyboardInterrupt:
+
+		print('********** END')
+
+	except Exception as ex:
+
+		print('********** UNKNOWN ERROR')
+		print('Error detail: {}'.format(ex))
+		traceback.print_exc()
+
+	finally:
+
+		if bleUartDevice1 is not None:
+			try:
+				await bleUartDevice1.disable_temperature_receive()
+				await bleUartDevice1.disconnect()
+				print('Disconnected from micro:bit device')
+			except Exception as ex:
+				print('Disconnect error: {}'.format(ex))
+
+
+
+if __name__ == '__main__':
+	try:
+		asyncio.run(main())
+	except KeyboardInterrupt:
+		print('********** END')
