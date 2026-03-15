@@ -94,6 +94,7 @@ input.onButtonPressed(Button.B, function () {
     ownCounter++
     seenlist.push("" + control.deviceName() + "|" + ownCounter)
     radio.sendString("" + control.deviceName() + "|" + ownCounter + "|" + msg)
+    //改这里之前呢seenlist不对，是收到自己传回来的消息一次以后才加入seenlist,现在修好了是发了就加进去了。
     basic.showIcon(IconNames.Happy)
     basic.pause(3000)
     showAccordingly(msg)
