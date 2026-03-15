@@ -1,3 +1,5 @@
+// @flow
+
 function showAccordingly (i: number) {
     if (i == 1) {
         basic.showLeds(`
