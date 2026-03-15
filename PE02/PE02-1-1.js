@@ -87,8 +87,8 @@ radio.onReceivedString(function (receivedString) {
 })
 input.onButtonPressed(Button.B, function () {
     console.log(control.deviceName())//注意这个emulator不行 因为两个emulator的name一样的
-    seenlist.push("" + control.deviceName() + "|" + ownCounter)
     ownCounter++
+    seenlist.push("" + control.deviceName() + "|" + ownCounter)
     radio.sendString("" + control.deviceName() + "|" + ownCounter + "|" + msg)
     basic.showIcon(IconNames.Happy)
     basic.pause(3000)
@@ -102,4 +102,3 @@ radio.setFrequencyBand(11)
 msg = 0
 ownCounter = 0
 seenlist = []
-
