@@ -16,7 +16,7 @@ grove.onGesture(GroveGesture.Down, function () {
     startNextRound()
 })
 function sendScore () {
-    radio.sendString("" + (pressCount))
+    radio.sendString("" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + pressCount)
 }
 grove.onGesture(GroveGesture.Right, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
@@ -32,6 +32,9 @@ grove.onGesture(GroveGesture.Right, function () {
     sendScore()
     startNextRound()
 })
+function sendFinalScore () {
+    radio.sendString("END|" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + pressCount)
+}
 // @flow
 function startNextRound () {
     waitingForPress = false
@@ -231,6 +234,8 @@ let gameEndTime = 0
 let waitingForPress = false
 let gameFinished = false
 let gameStarted = false
+let DEVICE_NAME = ""
+let PLAYER_NAME = ""
 let GAME_DURATION = 0
 // 一共30秒，测试用，到时候改成3分钟
 GAME_DURATION = 30000
@@ -241,6 +246,8 @@ let DISPLAY_ROW_DELAY = 80
 let BEEP_DURATION = 150
 let BEEP_FREQUENCY = 988
 let BEEP_VOLUME = 10
+PLAYER_NAME = "P1"
+DEVICE_NAME = control.deviceName()
 grove.initGesture()
 radio.setFrequencyBand(11)
 music.setVolume(BEEP_VOLUME)
@@ -256,6 +263,7 @@ basic.forever(function () {
         gameFinished = true
         waitingForPress = false
         beeping = false
+        sendFinalScore()
         basic.showNumber(pressCount)
         return
     }
