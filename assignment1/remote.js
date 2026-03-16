@@ -1,11 +1,6 @@
 // @flow
-function currentLetter() {
+function currentLetter () {
     return alphabet.charAt(currentLetterIndex)
-}
-function flashCurrentLetter() {
-    basic.clearScreen()
-    basic.pause(70)
-    showCurrentLetter()
 }
 input.onButtonPressed(Button.A, function () {
     if (!(inputStarted)) {
@@ -22,12 +17,12 @@ input.onButtonPressed(Button.A, function () {
     }
     showCurrentLetter()
 })
-function showRemoteSplash() {
+function showRemoteSplash () {
     basic.showString("REM")
     basic.showString(TARGET_DEVICE_NAME)
     basic.showIcon(IconNames.Yes)
 }
-function showCurrentLetter() {
+function showCurrentLetter () {
     basic.showString("" + (currentLetter()))
 }
 input.onButtonPressed(Button.AB, function () {
@@ -58,6 +53,11 @@ input.onButtonPressed(Button.B, function () {
     }
     showCurrentLetter()
 })
+function flashCurrentLetter () {
+    basic.clearScreen()
+    basic.pause(70)
+    showCurrentLetter()
+}
 let playerName = ""
 let currentPosition = 0
 let inputStarted = false
