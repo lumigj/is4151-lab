@@ -230,8 +230,15 @@ function getRowPattern (value: number, row: number) {
 let missFlashTime = 0
 let missFlashStep = 0
 let beepEndTime = 0
+let tooClosePenaltyTime = 0
+let tooClosePenaltyStep = 0
 let waitingNextRoundAfterMiss = false
 let flashingMiss = false
+let playerTooClose = false
+let distanceCm = 0
+let nextDistanceCheckTime = 0
+let pendingTooCloseReset = false
+let tooClosePenaltyActive = false
 let loopNow = 0
 let nextDisplayTime = 0
 let currentDisplayRow = 0
@@ -247,6 +254,7 @@ let gameStarted = false
 let DEVICE_NAME = ""
 let PLAYER_NAME = ""
 let GAME_DURATION = 0
+let display = grove.createDisplay(DigitalPin.P2, DigitalPin.P16)
 // 一共30秒，测试用，到时候改成3分钟
 GAME_DURATION = 30000
 // 3秒按下
@@ -257,6 +265,11 @@ let BEEP_DURATION = 150
 let BEEP_FREQUENCY = 988
 let BEEP_VOLUME = 10
 let MISS_FLASH_DELAY = 80
+let DISTANCE_CHECK_DELAY = 100
+let MIN_PLAYER_DISTANCE = 20
+let TOO_CLOSE_BEEP_ON_DELAY = 70
+let TOO_CLOSE_BEEP_OFF_DELAY = 60
+let TOO_CLOSE_FLASH_DELAY = 60
 PLAYER_NAME = "P1"
 DEVICE_NAME = control.deviceName()
 grove.initGesture()
@@ -268,14 +281,72 @@ basic.forever(function () {
         return
     }
     if (loopNow >= gameEndTime) {
-        if (beeping) {
+        if (beeping || tooClosePenaltyActive) {
             music.stopAllSounds()
+        }
+        if (pendingTooCloseReset) {
+            pressCount = 0
         }
         gameFinished = true
         waitingForPress = false
         beeping = false
+        tooClosePenaltyActive = false
+        pendingTooCloseReset = false
         sendFinalScore()
         basic.showNumber(pressCount)
+        return
+    }
+    if (loopNow >= nextDistanceCheckTime) {
+        nextDistanceCheckTime = loopNow + DISTANCE_CHECK_DELAY
+        distanceCm = grove.measureInCentimeters(DigitalPin.P1)
+        display.show(distanceCm)
+        if (distanceCm > 0 && distanceCm < MIN_PLAYER_DISTANCE) {
+            if (!(playerTooClose) && !(tooClosePenaltyActive)) {
+                playerTooClose = true
+                pendingTooCloseReset = true
+                if (beeping || tooClosePenaltyActive) {
+                    music.stopAllSounds()
+                }
+                beeping = false
+                flashingMiss = false
+                waitingNextRoundAfterMiss = false
+                displayingDigit = false
+                waitingForPress = false
+                tooClosePenaltyActive = true
+                tooClosePenaltyStep = 0
+                tooClosePenaltyTime = loopNow + TOO_CLOSE_BEEP_ON_DELAY
+                music.ringTone(BEEP_FREQUENCY)
+            }
+        } else {
+            playerTooClose = false
+        }
+    }
+    if (tooClosePenaltyActive && loopNow >= tooClosePenaltyTime) {
+        if (tooClosePenaltyStep == 0) {
+            music.stopAllSounds()
+            tooClosePenaltyTime = loopNow + TOO_CLOSE_BEEP_OFF_DELAY
+        } else if (tooClosePenaltyStep == 1) {
+            music.ringTone(BEEP_FREQUENCY)
+            tooClosePenaltyTime = loopNow + TOO_CLOSE_BEEP_ON_DELAY
+        } else if (tooClosePenaltyStep == 2) {
+            music.stopAllSounds()
+            basic.clearScreen()
+            tooClosePenaltyTime = loopNow + TOO_CLOSE_FLASH_DELAY
+        } else if (tooClosePenaltyStep == 3 || tooClosePenaltyStep == 5 || tooClosePenaltyStep == 7 || tooClosePenaltyStep == 9 || tooClosePenaltyStep == 11) {
+            showFullDigit(currentDigit)
+            tooClosePenaltyTime = loopNow + TOO_CLOSE_FLASH_DELAY
+        } else if (tooClosePenaltyStep == 4 || tooClosePenaltyStep == 6 || tooClosePenaltyStep == 8 || tooClosePenaltyStep == 10 || tooClosePenaltyStep == 12) {
+            basic.clearScreen()
+            tooClosePenaltyTime = loopNow + TOO_CLOSE_FLASH_DELAY
+        } else {
+            pressCount = 0
+            sendScore()
+            pendingTooCloseReset = false
+            tooClosePenaltyActive = false
+            startNextRound()
+            return
+        }
+        tooClosePenaltyStep += 1
         return
     }
     if (displayingDigit && loopNow >= nextDisplayTime) {
