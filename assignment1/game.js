@@ -47,11 +47,79 @@ function showDigitRow(value: number, row: number) {
         led.unplot(4, row)
     }
 }
-input.onButtonPressed(Button.B, function () {
+grove.onGesture(GroveGesture.Left, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
         return
     }
     if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 1) {
+        return
+    }
+    pressCount += 1
+    startNextRound()
+})
+grove.onGesture(GroveGesture.Right, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 2) {
+        return
+    }
+    pressCount += 1
+    startNextRound()
+})
+grove.onGesture(GroveGesture.Up, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 3) {
+        return
+    }
+    pressCount += 1
+    startNextRound()
+})
+grove.onGesture(GroveGesture.Down, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 4) {
+        return
+    }
+    pressCount += 1
+    startNextRound()
+})
+grove.onGesture(GroveGesture.Clockwise, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 5) {
+        return
+    }
+    pressCount += 1
+    startNextRound()
+})
+grove.onGesture(GroveGesture.Anticlockwise, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 6) {
         return
     }
     pressCount += 1
@@ -64,76 +132,78 @@ function getRowPattern(value: number, row: number) {
                 case 0:
                     return 4
                 case 1:
-                    return 12
+                    return 8
                 case 2:
-                    return 4
+                    return 31
                 case 3:
-                    return 4
+                    return 8
                 default:
-                    return 14
+                    return 4
             }
         case 2:
             switch (row) {
                 case 0:
-                    return 14
+                    return 4
                 case 1:
                     return 2
                 case 2:
-                    return 6
+                    return 31
                 case 3:
-                    return 8
+                    return 2
                 default:
-                    return 14
+                    return 4
             }
         case 3:
             switch (row) {
                 case 0:
-                    return 14
+                    return 4
                 case 1:
-                    return 2
-                case 2:
-                    return 6
-                case 3:
-                    return 2
-                default:
                     return 14
+                case 2:
+                    return 21
+                case 3:
+                    return 4
+                default:
+                    return 4
             }
         case 4:
             switch (row) {
                 case 0:
-                    return 10
+                    return 4
                 case 1:
-                    return 10
+                    return 4
                 case 2:
+                    return 21
+                case 3:
                     return 14
                 default:
-                    return 2
+                    return 4
             }
         case 5:
             switch (row) {
                 case 0:
                     return 14
                 case 1:
-                    return 8
+                    return 17
                 case 2:
-                    return 14
+                    return 13
                 case 3:
                     return 2
                 default:
-                    return 14
+                    return 12
             }
         default:
             switch (row) {
                 case 0:
                     return 14
                 case 1:
-                    return 8
+                    return 18
                 case 2:
-                    return 14
+                    return 22
                 case 3:
-                    return 10
+                    return 8
                 default:
-                    return 14
+                    return 6
             }
     }
 }
@@ -155,6 +225,9 @@ let RESPONSE_WINDOW = 3000 //3秒按下
 let DISPLAY_ROW_DELAY = 80
 let BEEP_DURATION = 150 //beep响多久
 let BEEP_FREQUENCY = 988
+let BEEP_VOLUME = 10
+grove.initGesture()
+music.setVolume(BEEP_VOLUME)
 basic.forever(function () {
     loopNow = input.runningTime()
     if (!(gameStarted) || gameFinished) {
