@@ -1,4 +1,8 @@
 radio.onReceivedString(function (receivedString) {
+    let parts = receivedString.split("|")
+    if (parts[0] == "START") {
+        return
+    }
     latestScore = receivedString
     serial.writeLine(latestScore)
     basic.showLeds(`

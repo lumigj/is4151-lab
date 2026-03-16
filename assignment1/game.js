@@ -43,17 +43,6 @@ function startNextRound () {
     nextDisplayTime = input.runningTime()
     basic.clearScreen()
 }
-input.onButtonPressed(Button.A, function () {
-    if (gameStarted) {
-        return
-    }
-    gameStarted = true
-    pressCount = 0
-    gameFinished = false
-    gameEndTime = input.runningTime() + GAME_DURATION
-    sendScore()
-    startNextRound()
-})
 grove.onGesture(GroveGesture.Clockwise, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
         return
@@ -82,6 +71,24 @@ grove.onGesture(GroveGesture.Up, function () {
     sendScore()
     startNextRound()
 })
+function startGameForPlayer (playerName: string) {
+    PLAYER_NAME = playerName
+    gameStarted = true
+    gameFinished = false
+    pressCount = 0
+    waitingForPress = false
+    displayingDigit = false
+    beeping = false
+    flashingMiss = false
+    waitingNextRoundAfterMiss = false
+    tooClosePenaltyActive = false
+    pendingTooCloseReset = false
+    playerTooClose = false
+    gameEndTime = input.runningTime() + GAME_DURATION
+    basic.showString(PLAYER_NAME)
+    sendScore()
+    startNextRound()
+}
 grove.onGesture(GroveGesture.Left, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
         return
@@ -123,6 +130,22 @@ function showDigitRow (value: number, row: number) {
         led.unplot(4, row)
     }
 }
+radio.onReceivedString(function (receivedString) {
+    parts = receivedString.split("|")
+    if (parts[0] != "START") {
+        return
+    }
+    if (parts.length < 3) {
+        return
+    }
+    if (parts[1] != DEVICE_NAME) {
+        return
+    }
+    if (gameStarted && !(gameFinished)) {
+        return
+    }
+    startGameForPlayer(parts[2])
+})
 grove.onGesture(GroveGesture.Anticlockwise, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
         return
@@ -232,18 +255,20 @@ let missFlashStep = 0
 let beepEndTime = 0
 let tooClosePenaltyTime = 0
 let tooClosePenaltyStep = 0
-let waitingNextRoundAfterMiss = false
-let flashingMiss = false
-let playerTooClose = false
 let distanceCm = 0
 let nextDistanceCheckTime = 0
+let loopNow = 0
+let parts: string[] = []
+let playerTooClose = false
 let pendingTooCloseReset = false
 let tooClosePenaltyActive = false
-let loopNow = 0
+let waitingNextRoundAfterMiss = false
+let flashingMiss = false
 let nextDisplayTime = 0
 let currentDisplayRow = 0
 let displayingDigit = false
 let beeping = false
+let PLAYER_NAME = ""
 let pressCount = 0
 let currentDigit = 0
 let roundDeadline = 0
@@ -252,7 +277,6 @@ let waitingForPress = false
 let gameFinished = false
 let gameStarted = false
 let DEVICE_NAME = ""
-let PLAYER_NAME = ""
 let GAME_DURATION = 0
 let display = grove.createDisplay(DigitalPin.P2, DigitalPin.P16)
 // 一共30秒，测试用，到时候改成3分钟
@@ -270,11 +294,13 @@ let MIN_PLAYER_DISTANCE = 20
 let TOO_CLOSE_BEEP_ON_DELAY = 70
 let TOO_CLOSE_BEEP_OFF_DELAY = 60
 let TOO_CLOSE_FLASH_DELAY = 60
-PLAYER_NAME = "P1"
 DEVICE_NAME = control.deviceName()
 grove.initGesture()
 radio.setFrequencyBand(11)
 music.setVolume(BEEP_VOLUME)
+basic.showString("GES")
+basic.showString(DEVICE_NAME)
+basic.showIcon(IconNames.SmallDiamond)
 basic.forever(function () {
     loopNow = input.runningTime()
     if (!(gameStarted) || gameFinished) {
