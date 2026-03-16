@@ -82,11 +82,10 @@ function startGameForPlayer (playerName: string) {
     flashingMiss = false
     waitingNextRoundAfterMiss = false
     tooClosePenaltyActive = false
-    pendingTooCloseReset = false
     playerTooClose = false
     gameEndTime = input.runningTime() + GAME_DURATION
-    basic.showString(PLAYER_NAME)
     sendScore()
+    basic.showString(PLAYER_NAME)
     startNextRound()
 }
 grove.onGesture(GroveGesture.Left, function () {
@@ -260,7 +259,6 @@ let nextDistanceCheckTime = 0
 let loopNow = 0
 let parts: string[] = []
 let playerTooClose = false
-let pendingTooCloseReset = false
 let tooClosePenaltyActive = false
 let waitingNextRoundAfterMiss = false
 let flashingMiss = false
@@ -310,14 +308,10 @@ basic.forever(function () {
         if (beeping || tooClosePenaltyActive) {
             music.stopAllSounds()
         }
-        if (pendingTooCloseReset) {
-            pressCount = 0
-        }
         gameFinished = true
         waitingForPress = false
         beeping = false
         tooClosePenaltyActive = false
-        pendingTooCloseReset = false
         sendFinalScore()
         basic.showNumber(pressCount)
         return
@@ -329,7 +323,8 @@ basic.forever(function () {
         if (distanceCm > 0 && distanceCm < MIN_PLAYER_DISTANCE) {
             if (!(playerTooClose) && !(tooClosePenaltyActive)) {
                 playerTooClose = true
-                pendingTooCloseReset = true
+                pressCount = 0
+                sendScore()
                 if (beeping || tooClosePenaltyActive) {
                     music.stopAllSounds()
                 }
@@ -365,9 +360,6 @@ basic.forever(function () {
             basic.clearScreen()
             tooClosePenaltyTime = loopNow + TOO_CLOSE_FLASH_DELAY
         } else {
-            pressCount = 0
-            sendScore()
-            pendingTooCloseReset = false
             tooClosePenaltyActive = false
             startNextRound()
             return

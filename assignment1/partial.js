@@ -1,4 +1,4 @@
-function randomPlayerName () {
+function randomPlayerName() {
     let name = ""
     for (let index = 0; index < 5; index++) {
         name = "" + name + alphabet.charAt(randint(0, 25))
