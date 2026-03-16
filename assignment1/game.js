@@ -1,7 +1,39 @@
 /**
  * @flow
  */
-function startNextRound() {
+grove.onGesture(GroveGesture.Down, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 4) {
+        return
+    }
+    pressCount += 1
+    sendScore()
+    startNextRound()
+})
+function sendScore () {
+    radio.sendString("" + (pressCount))
+}
+grove.onGesture(GroveGesture.Right, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 2) {
+        return
+    }
+    pressCount += 1
+    sendScore()
+    startNextRound()
+})
+// @flow
+function startNextRound () {
     waitingForPress = false
     beeping = false
     displayingDigit = true
@@ -18,9 +50,52 @@ input.onButtonPressed(Button.A, function () {
     pressCount = 0
     gameFinished = false
     gameEndTime = input.runningTime() + GAME_DURATION
+    sendScore()
     startNextRound()
 })
-function showDigitRow(value: number, row: number) {
+grove.onGesture(GroveGesture.Clockwise, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 5) {
+        return
+    }
+    pressCount += 1
+    sendScore()
+    startNextRound()
+})
+grove.onGesture(GroveGesture.Up, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 3) {
+        return
+    }
+    pressCount += 1
+    sendScore()
+    startNextRound()
+})
+grove.onGesture(GroveGesture.Left, function () {
+    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
+        return
+    }
+    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
+        return
+    }
+    if (currentDigit != 1) {
+        return
+    }
+    pressCount += 1
+    sendScore()
+    startNextRound()
+})
+function showDigitRow (value: number, row: number) {
     if (getRowPattern(value, row) & 16) {
         led.plot(0, row)
     } else {
@@ -47,71 +122,6 @@ function showDigitRow(value: number, row: number) {
         led.unplot(4, row)
     }
 }
-grove.onGesture(GroveGesture.Left, function () {
-    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
-        return
-    }
-    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
-        return
-    }
-    if (currentDigit != 1) {
-        return
-    }
-    pressCount += 1
-    startNextRound()
-})
-grove.onGesture(GroveGesture.Right, function () {
-    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
-        return
-    }
-    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
-        return
-    }
-    if (currentDigit != 2) {
-        return
-    }
-    pressCount += 1
-    startNextRound()
-})
-grove.onGesture(GroveGesture.Up, function () {
-    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
-        return
-    }
-    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
-        return
-    }
-    if (currentDigit != 3) {
-        return
-    }
-    pressCount += 1
-    startNextRound()
-})
-grove.onGesture(GroveGesture.Down, function () {
-    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
-        return
-    }
-    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
-        return
-    }
-    if (currentDigit != 4) {
-        return
-    }
-    pressCount += 1
-    startNextRound()
-})
-grove.onGesture(GroveGesture.Clockwise, function () {
-    if (!(gameStarted) || gameFinished || !(waitingForPress)) {
-        return
-    }
-    if (input.runningTime() >= gameEndTime || input.runningTime() > roundDeadline) {
-        return
-    }
-    if (currentDigit != 5) {
-        return
-    }
-    pressCount += 1
-    startNextRound()
-})
 grove.onGesture(GroveGesture.Anticlockwise, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
         return
@@ -123,9 +133,10 @@ grove.onGesture(GroveGesture.Anticlockwise, function () {
         return
     }
     pressCount += 1
+    sendScore()
     startNextRound()
 })
-function getRowPattern(value: number, row: number) {
+function getRowPattern (value: number, row: number) {
     switch (value) {
         case 1:
             switch (row) {
@@ -209,24 +220,29 @@ function getRowPattern(value: number, row: number) {
 }
 let beepEndTime = 0
 let loopNow = 0
-let roundDeadline = 0
-let gameEndTime = 0
-let gameFinished = false
-let pressCount = 0
-let gameStarted = false
 let nextDisplayTime = 0
 let currentDisplayRow = 0
-let currentDigit = 0
 let displayingDigit = false
 let beeping = false
+let pressCount = 0
+let currentDigit = 0
+let roundDeadline = 0
+let gameEndTime = 0
 let waitingForPress = false
-let GAME_DURATION = 30000 //一共30秒，测试用，到时候改成3分钟
-let RESPONSE_WINDOW = 3000 //3秒按下
+let gameFinished = false
+let gameStarted = false
+let GAME_DURATION = 0
+// 一共30秒，测试用，到时候改成3分钟
+GAME_DURATION = 30000
+// 3秒按下
+let RESPONSE_WINDOW = 3000
 let DISPLAY_ROW_DELAY = 80
-let BEEP_DURATION = 150 //beep响多久
+// beep响多久
+let BEEP_DURATION = 150
 let BEEP_FREQUENCY = 988
 let BEEP_VOLUME = 10
 grove.initGesture()
+radio.setFrequencyBand(11)
 music.setVolume(BEEP_VOLUME)
 basic.forever(function () {
     loopNow = input.runningTime()
