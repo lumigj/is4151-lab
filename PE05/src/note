@@ -1,0 +1,3 @@
+server是单的，client关了server也就关了
+server concurrent是每次开new thread handle client，关了也没事
+mqtt是pubsub
