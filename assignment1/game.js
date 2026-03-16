@@ -1,6 +1,4 @@
-/**
- * @flow
- */
+// @flow
 grove.onGesture(GroveGesture.Down, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
         return
@@ -139,6 +137,14 @@ grove.onGesture(GroveGesture.Anticlockwise, function () {
     sendScore()
     startNextRound()
 })
+function showFullDigit (value: number) {
+    basic.clearScreen()
+    showDigitRow(value, 0)
+    showDigitRow(value, 1)
+    showDigitRow(value, 2)
+    showDigitRow(value, 3)
+    showDigitRow(value, 4)
+}
 function getRowPattern (value: number, row: number) {
     switch (value) {
         case 1:
@@ -221,7 +227,11 @@ function getRowPattern (value: number, row: number) {
             }
     }
 }
+let missFlashTime = 0
+let missFlashStep = 0
 let beepEndTime = 0
+let waitingNextRoundAfterMiss = false
+let flashingMiss = false
 let loopNow = 0
 let nextDisplayTime = 0
 let currentDisplayRow = 0
@@ -246,6 +256,7 @@ let DISPLAY_ROW_DELAY = 80
 let BEEP_DURATION = 150
 let BEEP_FREQUENCY = 988
 let BEEP_VOLUME = 10
+let MISS_FLASH_DELAY = 80
 PLAYER_NAME = "P1"
 DEVICE_NAME = control.deviceName()
 grove.initGesture()
@@ -282,12 +293,34 @@ basic.forever(function () {
     if (waitingForPress && loopNow > roundDeadline) {
         waitingForPress = false
         beeping = true
+        flashingMiss = true
+        waitingNextRoundAfterMiss = true
         beepEndTime = loopNow + BEEP_DURATION
+        missFlashStep = 0
+        missFlashTime = loopNow + MISS_FLASH_DELAY
         music.ringTone(BEEP_FREQUENCY)
+        return
+    }
+    if (flashingMiss && loopNow >= missFlashTime) {
+        if (missFlashStep == 0 || missFlashStep == 2) {
+            basic.clearScreen()
+        } else {
+            showFullDigit(currentDigit)
+        }
+        missFlashStep += 1
+        if (missFlashStep >= 4) {
+            flashingMiss = false
+        } else {
+            missFlashTime = loopNow + MISS_FLASH_DELAY
+        }
         return
     }
     if (beeping && loopNow >= beepEndTime) {
         music.stopAllSounds()
+        beeping = false
+    }
+    if (waitingNextRoundAfterMiss && !(beeping) && !(flashingMiss)) {
+        waitingNextRoundAfterMiss = false
         startNextRound()
     }
 })
