@@ -34,7 +34,7 @@ input.onButtonPressed(Button.AB, function () {
     currentPosition += 1
     if (currentPosition >= 5) {
         inputStarted = false
-        radio.sendString("START|" + TARGET_DEVICE_NAME + "|" + playerName)
+        radio.sendString("S|" + TARGET_DEVICE_NAME + "|" + playerName)
         basic.showString(playerName)
         basic.showIcon(IconNames.Yes)
         showRemoteSplash()

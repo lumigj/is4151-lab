@@ -14,7 +14,7 @@ grove.onGesture(GroveGesture.Down, function () {
     startNextRound()
 })
 function sendScore () {
-    radio.sendString("" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + pressCount)
+    sendPacket("L")
 }
 grove.onGesture(GroveGesture.Right, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
@@ -31,7 +31,7 @@ grove.onGesture(GroveGesture.Right, function () {
     startNextRound()
 })
 function sendFinalScore () {
-    radio.sendString("END|" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + pressCount)
+    sendPacket("E")
 }
 // @flow
 function startNextRound () {
@@ -131,7 +131,7 @@ function showDigitRow (value: number, row: number) {
 }
 radio.onReceivedString(function (receivedString) {
     parts = receivedString.split("|")
-    if (parts[0] != "START") {
+    if (parts[0] != "S") {
         return
     }
     if (parts.length < 3) {
@@ -145,6 +145,17 @@ radio.onReceivedString(function (receivedString) {
     }
     startGameForPlayer(parts[2])
 })
+function sendPacket (packetType: string) {
+    messageSequence += 1
+    for (let index = 0; index < RADIO_REPEAT_COUNT; index++) {
+        if (packetType == "E") {
+            radioPacket = "E|" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + encodeBase36(pressCount) + "|" + encodeBase36(messageSequence)
+        } else {
+            radioPacket = "L|" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + encodeBase36(pressCount) + "|" + encodeBase36(messageSequence)
+        }
+        radio.sendString(radioPacket)
+    }
+}
 grove.onGesture(GroveGesture.Anticlockwise, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
         return
@@ -166,6 +177,20 @@ function showFullDigit (value: number) {
     showDigitRow(value, 2)
     showDigitRow(value, 3)
     showDigitRow(value, 4)
+}
+function encodeBase36 (value: number) {
+    if (value == 0) {
+        return "0"
+    }
+    while (value > 0) {
+        remainder = value % 36
+        encoded = "" + base36Digit(remainder) + encoded
+        value = Math.idiv(value, 36)
+    }
+    return encoded
+}
+function base36Digit (value: number) {
+    return BASE36_DIGITS.charAt(value)
 }
 function getRowPattern (value: number, row: number) {
     switch (value) {
@@ -257,16 +282,20 @@ let tooClosePenaltyStep = 0
 let distanceCm = 0
 let nextDistanceCheckTime = 0
 let loopNow = 0
+let encoded = ""
+let remainder = 0
+let radioPacket = ""
+let messageSequence = 0
 let parts: string[] = []
 let playerTooClose = false
 let tooClosePenaltyActive = false
 let waitingNextRoundAfterMiss = false
 let flashingMiss = false
+let PLAYER_NAME = ""
 let nextDisplayTime = 0
 let currentDisplayRow = 0
 let displayingDigit = false
 let beeping = false
-let PLAYER_NAME = ""
 let pressCount = 0
 let currentDigit = 0
 let roundDeadline = 0
@@ -276,9 +305,14 @@ let gameFinished = false
 let gameStarted = false
 let DEVICE_NAME = ""
 let GAME_DURATION = 0
+let RADIO_REPEAT_COUNT = 0
+let BASE36_DIGITS = ""
+let value = 0
+BASE36_DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+RADIO_REPEAT_COUNT = 3
+GAME_DURATION = 18000000
 let display = grove.createDisplay(DigitalPin.P2, DigitalPin.P16)
 // 一共30秒，测试用，到时候改成3分钟
-GAME_DURATION = 30000
 // 3秒按下
 let RESPONSE_WINDOW = 3000
 let DISPLAY_ROW_DELAY = 80

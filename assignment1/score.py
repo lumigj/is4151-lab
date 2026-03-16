@@ -12,6 +12,7 @@ scores_lock = threading.Lock()
 live_scores_by_device = {}
 final_scores = []
 message_order = 0
+BASE36_DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 HTML_PAGE = """<!doctype html>
 <html lang="en">
@@ -211,27 +212,40 @@ def resolve_web_port():
     return 8000
 
 
+def decode_base36(text):
+    value = 0
+    for char in text:
+        digit_value = BASE36_DIGITS.find(char)
+        if digit_value < 0:
+            raise ValueError(f"Invalid base36 value: {text}")
+        value = value * 36 + digit_value
+    return value
+
+
 def parse_score_message(message):
     parts = message.split("|")
-    if len(parts) == 3:
-        device_name, player_name, score_text = parts
+    if len(parts) == 5 and parts[0] in {"L", "E"}:
+        packet_type, device_name, player_name, score_text, _sequence_text = parts
         return {
+            "packet_type": packet_type,
             "device_name": device_name,
             "player_name": player_name,
-            "score": int(score_text),
-            "final": False,
-        }
-
-    if len(parts) == 4 and parts[0] == "END":
-        _, device_name, player_name, score_text = parts
-        return {
-            "device_name": device_name,
-            "player_name": player_name,
-            "score": int(score_text),
-            "final": True,
+            "score": decode_base36(score_text),
+            "sequence": decode_base36(_sequence_text),
+            "final": packet_type == "E",
         }
 
     return None
+
+
+def format_parsed_message(parsed):
+    return (
+        f"parsed: type={parsed['packet_type']} "
+        f"device={parsed['device_name']} "
+        f"player={parsed['player_name']} "
+        f"score={parsed['score']} "
+        f"seq={parsed['sequence']}"
+    )
 
 
 def update_scores(message):
@@ -272,7 +286,10 @@ def serial_reader_loop(ser):
             line = msg.decode("utf-8", errors="replace").strip()
 
             if line:
-                print(line)
+                parsed = parse_score_message(line)
+                print(f"raw: {line}")
+                if parsed is not None:
+                    print(format_parsed_message(parsed))
                 try:
                     update_scores(line)
                 except ValueError:
