@@ -9,7 +9,9 @@ from serial.tools import list_ports
 
 
 scores_lock = threading.Lock()
-scores = {}
+live_scores_by_device = {}
+final_scores = []
+message_order = 0
 
 HTML_PAGE = """<!doctype html>
 <html lang="en">
@@ -107,7 +109,7 @@ HTML_PAGE = """<!doctype html>
             <tr>
               <th>Device</th>
               <th>Player</th>
-              <th>Final</th>
+              <th>Score</th>
             </tr>
           </thead>
           <tbody id="final-body"></tbody>
@@ -233,31 +235,33 @@ def parse_score_message(message):
 
 
 def update_scores(message):
+    global message_order
     parsed = parse_score_message(message)
     if parsed is None:
         return
 
     with scores_lock:
-        scores[parsed["device_name"]] = parsed
+        message_order += 1
+        parsed["order"] = message_order
+
+        if parsed["final"]:
+            live_scores_by_device.pop(parsed["device_name"], None)
+            final_scores.append(parsed)
+        else:
+            live_scores_by_device[parsed["device_name"]] = parsed
 
 
 def build_snapshot():
     with scores_lock:
-        live_scores = []
-        final_scores = []
+        live_scores = [score.copy() for score in live_scores_by_device.values()]
+        finished_scores = [score.copy() for score in final_scores]
 
-        for score in scores.values():
-            if score["final"]:
-                final_scores.append(score.copy())
-            else:
-                live_scores.append(score.copy())
-
-    live_scores.sort(key=lambda item: (-item["score"], item["player_name"], item["device_name"]))
-    final_scores.sort(key=lambda item: (-item["score"], item["player_name"], item["device_name"]))
+    live_scores.sort(key=lambda item: (-item["score"], -item["order"]))
+    finished_scores.sort(key=lambda item: (-item["score"], -item["order"]))
 
     return {
         "live_scores": live_scores,
-        "final_scores": final_scores,
+        "final_scores": finished_scores,
     }
 
 
