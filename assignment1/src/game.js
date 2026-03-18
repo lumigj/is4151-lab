@@ -13,8 +13,8 @@ grove.onGesture(GroveGesture.Down, function () {
     sendScore()
     startNextRound()
 })
-function sendScore () {
-    radio.sendString("" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + pressCount)
+function sendScore() {
+    sendPacket("L")
 }
 grove.onGesture(GroveGesture.Right, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
@@ -30,11 +30,16 @@ grove.onGesture(GroveGesture.Right, function () {
     sendScore()
     startNextRound()
 })
-function sendFinalScore () {
-    radio.sendString("END|" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + pressCount)
+function sendFinalScore() {
+    sendPacket("E")
+}
+function sendStartPacket() {
+    for (let index = 0; index < RADIO_REPEAT_COUNT; index++) {
+        radio.sendString("S|" + DEVICE_NAME + "|" + PLAYER_NAME)
+    }
 }
 // @flow
-function startNextRound () {
+function startNextRound() {
     waitingForPress = false
     beeping = false
     displayingDigit = true
@@ -71,7 +76,7 @@ grove.onGesture(GroveGesture.Up, function () {
     sendScore()
     startNextRound()
 })
-function startGameForPlayer (playerName: string) {
+function startGameForPlayer(playerName: string) {
     PLAYER_NAME = playerName
     gameStarted = true
     gameFinished = false
@@ -84,6 +89,7 @@ function startGameForPlayer (playerName: string) {
     tooClosePenaltyActive = false
     playerTooClose = false
     gameEndTime = input.runningTime() + GAME_DURATION
+    sendStartPacket()
     sendScore()
     basic.showString(PLAYER_NAME)
     startNextRound()
@@ -102,7 +108,7 @@ grove.onGesture(GroveGesture.Left, function () {
     sendScore()
     startNextRound()
 })
-function showDigitRow (value: number, row: number) {
+function showDigitRow(value: number, row: number) {
     if (getRowPattern(value, row) & 16) {
         led.plot(0, row)
     } else {
@@ -131,7 +137,7 @@ function showDigitRow (value: number, row: number) {
 }
 radio.onReceivedString(function (receivedString) {
     parts = receivedString.split("|")
-    if (parts[0] != "START") {
+    if (parts[0] != "R") {
         return
     }
     if (parts.length < 3) {
@@ -145,6 +151,15 @@ radio.onReceivedString(function (receivedString) {
     }
     startGameForPlayer(parts[2])
 })
+function sendPacket(packetType: string) {
+    for (let index = 0; index < RADIO_REPEAT_COUNT; index++) {
+        if (packetType == "E") {
+            radio.sendString("E|" + DEVICE_NAME + "|" + pressCount)
+        } else {
+            radio.sendString("L|" + DEVICE_NAME + "|" + pressCount)
+        }
+    }
+}
 grove.onGesture(GroveGesture.Anticlockwise, function () {
     if (!(gameStarted) || gameFinished || !(waitingForPress)) {
         return
@@ -159,7 +174,7 @@ grove.onGesture(GroveGesture.Anticlockwise, function () {
     sendScore()
     startNextRound()
 })
-function showFullDigit (value: number) {
+function showFullDigit(value: number) {
     basic.clearScreen()
     showDigitRow(value, 0)
     showDigitRow(value, 1)
@@ -167,7 +182,7 @@ function showFullDigit (value: number) {
     showDigitRow(value, 3)
     showDigitRow(value, 4)
 }
-function getRowPattern (value: number, row: number) {
+function getRowPattern(value: number, row: number) {
     switch (value) {
         case 1:
             switch (row) {
@@ -262,11 +277,11 @@ let playerTooClose = false
 let tooClosePenaltyActive = false
 let waitingNextRoundAfterMiss = false
 let flashingMiss = false
+let PLAYER_NAME = ""
 let nextDisplayTime = 0
 let currentDisplayRow = 0
 let displayingDigit = false
 let beeping = false
-let PLAYER_NAME = ""
 let pressCount = 0
 let currentDigit = 0
 let roundDeadline = 0
@@ -276,9 +291,11 @@ let gameFinished = false
 let gameStarted = false
 let DEVICE_NAME = ""
 let GAME_DURATION = 0
+let RADIO_REPEAT_COUNT = 0
+RADIO_REPEAT_COUNT = 3
+GAME_DURATION = 180000
 let display = grove.createDisplay(DigitalPin.P2, DigitalPin.P16)
 // 一共30秒，测试用，到时候改成3分钟
-GAME_DURATION = 30000
 // 3秒按下
 let RESPONSE_WINDOW = 3000
 let DISPLAY_ROW_DELAY = 80

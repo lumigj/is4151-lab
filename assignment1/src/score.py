@@ -11,6 +11,7 @@ from serial.tools import list_ports
 scores_lock = threading.Lock()
 live_scores_by_device = {}
 final_scores = []
+player_names_by_device = {}
 message_order = 0
 
 HTML_PAGE = """<!doctype html>
@@ -213,42 +214,86 @@ def resolve_web_port():
 
 def parse_score_message(message):
     parts = message.split("|")
-    if len(parts) == 3:
-        device_name, player_name, score_text = parts
+    if len(parts) == 3 and parts[0] == "S":
         return {
-            "device_name": device_name,
-            "player_name": player_name,
-            "score": int(score_text),
-            "final": False,
+            "packet_type": "S",
+            "device_name": parts[1],
+            "player_name": parts[2],
         }
-
-    if len(parts) == 4 and parts[0] == "END":
-        _, device_name, player_name, score_text = parts
+    if len(parts) == 3 and parts[0] == "L":
         return {
-            "device_name": device_name,
-            "player_name": player_name,
-            "score": int(score_text),
-            "final": True,
+            "packet_type": "L",
+            "device_name": parts[1],
+            "score": int(parts[2]),
         }
-
+    if len(parts) == 3 and parts[0] == "E":
+        return {
+            "packet_type": "E",
+            "device_name": parts[1],
+            "score": int(parts[2]),
+        }
     return None
+
+
+def format_parsed_message(parsed):
+    if parsed["packet_type"] == "S":
+        return (
+            f"parsed: type=S "
+            f"device={parsed['device_name']} "
+            f"player={parsed['player_name']}"
+        )
+    if parsed["packet_type"] == "L":
+        return (
+            f"parsed: type=L "
+            f"device={parsed['device_name']} "
+            f"score={parsed['score']}"
+        )
+    return (
+        f"parsed: type=E "
+        f"device={parsed['device_name']} "
+        f"score={parsed['score']}"
+    )
 
 
 def update_scores(message):
     global message_order
     parsed = parse_score_message(message)
     if parsed is None:
-        return
+        return False
 
     with scores_lock:
-        message_order += 1
-        parsed["order"] = message_order
+        if parsed["packet_type"] == "S":
+            player_names_by_device[parsed["device_name"]] = parsed["player_name"]
+            if parsed["device_name"] in live_scores_by_device:
+                live_scores_by_device[parsed["device_name"]]["player_name"] = parsed["player_name"]
+            return True
 
-        if parsed["final"]:
-            live_scores_by_device.pop(parsed["device_name"], None)
-            final_scores.append(parsed)
-        else:
-            live_scores_by_device[parsed["device_name"]] = parsed
+        player_name = player_names_by_device.get(parsed["device_name"])
+        if player_name is None:
+            return False
+
+        message_order += 1
+
+        if parsed["packet_type"] == "L":
+            live_scores_by_device[parsed["device_name"]] = {
+                "device_name": parsed["device_name"],
+                "player_name": player_name,
+                "score": parsed["score"],
+                "order": message_order,
+            }
+            return True
+
+        live_scores_by_device.pop(parsed["device_name"], None)
+        player_names_by_device.pop(parsed["device_name"], None)
+        final_scores.append(
+            {
+                "device_name": parsed["device_name"],
+                "player_name": player_name,
+                "score": parsed["score"],
+                "order": message_order,
+            }
+        )
+        return True
 
 
 def build_snapshot():
@@ -272,9 +317,14 @@ def serial_reader_loop(ser):
             line = msg.decode("utf-8", errors="replace").strip()
 
             if line:
-                print(line)
+                parsed = parse_score_message(line)
+                print(f"raw: {line}")
+                if parsed is not None:
+                    print(format_parsed_message(parsed))
                 try:
-                    update_scores(line)
+                    handled = update_scores(line)
+                    if parsed is not None and not handled:
+                        print("ignored: no active player mapping")
                 except ValueError:
                     print(f"Ignored malformed score line: {line}")
         else:
