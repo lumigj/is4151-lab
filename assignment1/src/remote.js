@@ -1,5 +1,5 @@
 // @flow
-function currentLetter () {
+function currentLetter() {
     return alphabet.charAt(currentLetterIndex)
 }
 input.onButtonPressed(Button.A, function () {
@@ -17,12 +17,12 @@ input.onButtonPressed(Button.A, function () {
     }
     showCurrentLetter()
 })
-function showRemoteSplash () {
+function showRemoteSplash() {
     basic.showString("REM")
     basic.showString(TARGET_DEVICE_NAME)
     basic.showIcon(IconNames.Yes)
 }
-function showCurrentLetter () {
+function showCurrentLetter() {
     basic.showString("" + (currentLetter()))
 }
 input.onButtonPressed(Button.AB, function () {
@@ -34,7 +34,9 @@ input.onButtonPressed(Button.AB, function () {
     currentPosition += 1
     if (currentPosition >= 5) {
         inputStarted = false
-        radio.sendString("S|" + TARGET_DEVICE_NAME + "|" + playerName)
+        for (let index = 0; index < RADIO_REPEAT_COUNT; index++) {
+            radio.sendString("R|" + TARGET_DEVICE_NAME + "|" + playerName)
+        }
         basic.showString(playerName)
         basic.showIcon(IconNames.Yes)
         showRemoteSplash()
@@ -53,7 +55,7 @@ input.onButtonPressed(Button.B, function () {
     }
     showCurrentLetter()
 })
-function flashCurrentLetter () {
+function flashCurrentLetter() {
     basic.clearScreen()
     basic.pause(70)
     showCurrentLetter()
@@ -63,7 +65,9 @@ let currentPosition = 0
 let inputStarted = false
 let currentLetterIndex = 0
 let alphabet = ""
+let RADIO_REPEAT_COUNT = 0
 let TARGET_DEVICE_NAME = ""
+RADIO_REPEAT_COUNT = 3
 TARGET_DEVICE_NAME = "vatoz"
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 radio.setFrequencyBand(11)

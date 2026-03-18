@@ -13,7 +13,7 @@ grove.onGesture(GroveGesture.Down, function () {
     sendScore()
     startNextRound()
 })
-function sendScore () {
+function sendScore() {
     sendPacket("L")
 }
 grove.onGesture(GroveGesture.Right, function () {
@@ -30,11 +30,16 @@ grove.onGesture(GroveGesture.Right, function () {
     sendScore()
     startNextRound()
 })
-function sendFinalScore () {
+function sendFinalScore() {
     sendPacket("E")
 }
+function sendStartPacket() {
+    for (let index = 0; index < RADIO_REPEAT_COUNT; index++) {
+        radio.sendString("S|" + DEVICE_NAME + "|" + PLAYER_NAME)
+    }
+}
 // @flow
-function startNextRound () {
+function startNextRound() {
     waitingForPress = false
     beeping = false
     displayingDigit = true
@@ -71,7 +76,7 @@ grove.onGesture(GroveGesture.Up, function () {
     sendScore()
     startNextRound()
 })
-function startGameForPlayer (playerName: string) {
+function startGameForPlayer(playerName: string) {
     PLAYER_NAME = playerName
     gameStarted = true
     gameFinished = false
@@ -84,6 +89,7 @@ function startGameForPlayer (playerName: string) {
     tooClosePenaltyActive = false
     playerTooClose = false
     gameEndTime = input.runningTime() + GAME_DURATION
+    sendStartPacket()
     sendScore()
     basic.showString(PLAYER_NAME)
     startNextRound()
@@ -102,7 +108,7 @@ grove.onGesture(GroveGesture.Left, function () {
     sendScore()
     startNextRound()
 })
-function showDigitRow (value: number, row: number) {
+function showDigitRow(value: number, row: number) {
     if (getRowPattern(value, row) & 16) {
         led.plot(0, row)
     } else {
@@ -131,7 +137,7 @@ function showDigitRow (value: number, row: number) {
 }
 radio.onReceivedString(function (receivedString) {
     parts = receivedString.split("|")
-    if (parts[0] != "S") {
+    if (parts[0] != "R") {
         return
     }
     if (parts.length < 3) {
@@ -145,15 +151,13 @@ radio.onReceivedString(function (receivedString) {
     }
     startGameForPlayer(parts[2])
 })
-function sendPacket (packetType: string) {
-    messageSequence += 1
+function sendPacket(packetType: string) {
     for (let index = 0; index < RADIO_REPEAT_COUNT; index++) {
         if (packetType == "E") {
-            radioPacket = "E|" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + encodeBase36(pressCount) + "|" + encodeBase36(messageSequence)
+            radio.sendString("E|" + DEVICE_NAME + "|" + pressCount)
         } else {
-            radioPacket = "L|" + DEVICE_NAME + "|" + PLAYER_NAME + "|" + encodeBase36(pressCount) + "|" + encodeBase36(messageSequence)
+            radio.sendString("L|" + DEVICE_NAME + "|" + pressCount)
         }
-        radio.sendString(radioPacket)
     }
 }
 grove.onGesture(GroveGesture.Anticlockwise, function () {
@@ -170,7 +174,7 @@ grove.onGesture(GroveGesture.Anticlockwise, function () {
     sendScore()
     startNextRound()
 })
-function showFullDigit (value: number) {
+function showFullDigit(value: number) {
     basic.clearScreen()
     showDigitRow(value, 0)
     showDigitRow(value, 1)
@@ -178,21 +182,7 @@ function showFullDigit (value: number) {
     showDigitRow(value, 3)
     showDigitRow(value, 4)
 }
-function encodeBase36 (value: number) {
-    if (value == 0) {
-        return "0"
-    }
-    while (value > 0) {
-        remainder = value % 36
-        encoded = "" + base36Digit(remainder) + encoded
-        value = Math.idiv(value, 36)
-    }
-    return encoded
-}
-function base36Digit (value: number) {
-    return BASE36_DIGITS.charAt(value)
-}
-function getRowPattern (value: number, row: number) {
+function getRowPattern(value: number, row: number) {
     switch (value) {
         case 1:
             switch (row) {
@@ -282,10 +272,6 @@ let tooClosePenaltyStep = 0
 let distanceCm = 0
 let nextDistanceCheckTime = 0
 let loopNow = 0
-let encoded = ""
-let remainder = 0
-let radioPacket = ""
-let messageSequence = 0
 let parts: string[] = []
 let playerTooClose = false
 let tooClosePenaltyActive = false
@@ -306,11 +292,8 @@ let gameStarted = false
 let DEVICE_NAME = ""
 let GAME_DURATION = 0
 let RADIO_REPEAT_COUNT = 0
-let BASE36_DIGITS = ""
-let value = 0
-BASE36_DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 RADIO_REPEAT_COUNT = 3
-GAME_DURATION = 18000000
+GAME_DURATION = 180000
 let display = grove.createDisplay(DigitalPin.P2, DigitalPin.P16)
 // 一共30秒，测试用，到时候改成3分钟
 // 3秒按下
