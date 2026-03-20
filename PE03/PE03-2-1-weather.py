@@ -4,10 +4,11 @@ import board
 import RPi.GPIO as GPIO
 from adafruit_bme280 import basic as adafruit_bme280
 
-# Same BOARD pins as PE03-1-1.py
-TEMP_LED_RED_PIN = 11
-TEMP_LED_GREEN_PIN = 13
-TEMP_LED_BLUE_PIN = 15
+# Use BCM numbering because Blinka/I2C setup may already set GPIO to BCM mode.
+# BCM 17/27/22 correspond to physical pins 11/13/15.
+TEMP_LED_RED_PIN = 17
+TEMP_LED_GREEN_PIN = 27
+TEMP_LED_BLUE_PIN = 22
 
 TEMP_THRESHOLD = 0.5
 CHECK_INTERVAL_SECONDS = 1
@@ -42,7 +43,8 @@ def update_temperature_gauge(current_temp, baseline_temp):
 i2c = board.I2C()  # uses board.SCL and board.SDA
 bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
-GPIO.setmode(GPIO.BOARD)
+
+GPIO.setmode(GPIO.BCM)
 GPIO.setup(TEMP_LED_RED_PIN, GPIO.OUT)
 GPIO.setup(TEMP_LED_GREEN_PIN, GPIO.OUT)
 GPIO.setup(TEMP_LED_BLUE_PIN, GPIO.OUT)
