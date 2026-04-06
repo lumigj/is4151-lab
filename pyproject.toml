@@ -5,6 +5,8 @@ description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
     "gpiozero>=2.0.1",
+    "graphviz>=0.21",
+    "ipykernel>=7.2.0",
     "paho-mqtt>=2.1.0",
     "pyserial>=3.5",
 ]
