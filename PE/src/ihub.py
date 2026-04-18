@@ -202,7 +202,7 @@ def smartlight():
 
 def init():    
 
-    GPIO.setmode(GPIO.BOARD)
+    GPIO.setmode(GPIO.BCM)
     
     global redLedPin
     redLedPin = 11
