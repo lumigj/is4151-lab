@@ -18,7 +18,7 @@ def index():
 	conn = sqlite3.connect('light.db')
 	
 	c = conn.cursor()
-	c.execute('SELECT id, devicename, light, timestamp FROM light ORDER BY id DESC')
+	c.execute('SELECT id, devicename, crowd_density, abright, atemp, timestamp FROM light ORDER BY id DESC')
 	results = c.fetchall()
 	
 	html = '<html><head><title>Cloud Server</title><meta http-equiv="refresh" content="5" /></head><body><h1>Global Lights</h1><table cellspacing="1" cellpadding="3" border="1"><tr><th>ID</th><th>Device Name</th><th>Light</th><th>Timestamp</th></tr>'

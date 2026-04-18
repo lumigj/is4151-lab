@@ -30,7 +30,11 @@ paths:
                   type: "number"
                 devicename:
                   type: "string"
-                light:
+                crowd_density:
+                  type: "number"
+                abright:
+                  type: "number"
+                atemp:
                   type: "number"
                 timestamp:
                   type: "string"
@@ -50,8 +54,12 @@ paths:
             properties:
               devicename:
                   type: "string"
-              light:
-                  type: "number"
+              crowd_density:
+                type: "number"
+              abright:
+                type: "number"
+              atemp:
+                type: "number"
               timestamp:
                   type: "string"
       responses:

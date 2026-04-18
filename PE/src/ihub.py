@@ -114,7 +114,7 @@ def rhub():
 
 def cloudrelay():        
     
-    base_uri = 'http://169.254.53.99:5000/'
+    base_uri = 'http://127.20.10.2:5000/'
     globallight_uri = base_uri + 'api/globallight'
     headers = {'content-type': 'application/json'}
     
@@ -128,18 +128,20 @@ def cloudrelay():
                 
         conn = sqlite3.connect('light.db')
         c = conn.cursor()
-        c.execute('SELECT id, devicename, light, timestamp FROM light WHERE tocloud = 0')
+        c.execute('SELECT id, devicename, crowd_density, abright, atemp, timestamp FROM light WHERE tocloud = 0')
         results = c.fetchall()
         c = conn.cursor()
                 
         for result in results:
                     
-            print('Relaying id={}; devicename={}; light={}; timestamp={}'.format(result[0], result[1], result[2], result[3]))
+            print('Relaying id={}; devicename={}; crowd_density={}; abright={}; atemp={}; timestamp={}'.format(result[0], result[1], result[2], result[3], result[4], result[5]))
             
             glight = {
                 'devicename':result[1],
-                'light':result[2],
-                'timestamp':result[3]
+                'crowd_density':result[2],
+                'abright':result[3],
+                'atemp':result[4],
+                'timestamp':result[5]
             }
             req = requests.put(globallight_uri, headers = headers, data = json.dumps(glight))
             
@@ -227,7 +229,7 @@ def main():
     init()
     
     thread.start_new_thread(rhub, ())
-    # thread.start_new_thread(cloudrelay, ())
+    thread.start_new_thread(cloudrelay, ())
     thread.start_new_thread(smartlight, ())
     
     print('Program running... Press CTRL+C to exit')
