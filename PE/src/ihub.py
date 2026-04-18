@@ -43,8 +43,9 @@ def saveData(lights):
         
         data = light.split('=')
         realData = data[1].split('|')
-        
-        sql = "INSERT INTO light (devicename, crowd_density, abright, atemp, timestamp) VALUES('" + data[0] + "', " + realData[0]  + "', " + realData[1]  + "', " + "8964" + ", datetime('now', 'localtime'))"
+
+        #TODO
+        sql = "INSERT INTO light (devicename, crowd_density, abright, atemp, timestamp) VALUES('" + data[0] + "', " + realData[0]  + "', " + realData[1]  + "', " + 8964 + ", datetime('now', 'localtime'))"
         c.execute(sql)
     
     conn.commit()
@@ -166,13 +167,14 @@ def on_message(client, userdata, msg):
     smartlight = str(msg.payload.decode())
     print('Smartlight command subscribed: ' + smartlight)
     
-    if smartlight == 'on':
+    if smartlight == 'normal':
         
-        GPIO.output(redLedPin, True)
-        
-    else:
-    
+        GPIO.output(greenLedPin, True)
         GPIO.output(redLedPin, False)
+
+    if smartlight == 'harsh':
+        GPIO.output(greenLedPin, False)
+        GPIO.output(redLedPin, True)
 
 
 
@@ -206,17 +208,22 @@ def init():
     global redLedPin
     redLedPin = 11
     GPIO.setup(redLedPin, GPIO.OUT)
-    GPIO.output(redLedPin, False)
+    GPIO.output(redLedPin, True)
+
+    global greenLedPin
+    greenLedPin = 13
+    GPIO.setup(greenLedPin, GPIO.OUT)
+    GPIO.output(greenLedPin, True) #TODO
 
 
 
 def main():
     
-    # init()
+    init()
     
     thread.start_new_thread(rhub, ())
     # thread.start_new_thread(cloudrelay, ())
-    # thread.start_new_thread(smartlight, ())
+    thread.start_new_thread(smartlight, ())
     
     print('Program running... Press CTRL+C to exit')
     
