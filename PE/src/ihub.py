@@ -44,8 +44,7 @@ def saveData(lights):
         data = light.split('=')
         realData = data[1].split('|')
 
-        #TODO
-        sql = "INSERT INTO light (devicename, crowd_density, abright, atemp, timestamp) VALUES('" + data[0] + "', " + realData[0]  + "', " + realData[1]  + "', " + 8964 + ", datetime('now', 'localtime'))"
+        sql = "INSERT INTO light (devicename, crowd_density, abright, atemp, timestamp) VALUES('" + data[0] + "', " + realData[0]  + "', " + realData[1]  + "', " + bme280.temperature + ", datetime('now', 'localtime'))"
         c.execute(sql)
     
     conn.commit()
@@ -215,6 +214,11 @@ def init():
     GPIO.setup(greenLedPin, GPIO.OUT)
     GPIO.output(greenLedPin, True) #TODO
 
+    import board
+    from adafruit_bme280 import basic as adafruit_bme280
+    i2c=board.I2C()
+    global bme280
+    bme280=adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
 
 def main():
