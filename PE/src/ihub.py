@@ -43,7 +43,7 @@ def saveData(lights):
         
         data = light.split('=')
         realData = data[1].split('|')
-        temp = bme280.temperature
+        temp = str(bme280.temperature)
 
         sql = "INSERT INTO light (devicename, crowd_density, abright, atemp, timestamp) VALUES("+data[0]+","+ realData[0]+","+realData[1]+"," + temp +", datetime('now', 'localtime'))"
         c.execute(sql)
