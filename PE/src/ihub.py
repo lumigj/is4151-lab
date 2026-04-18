@@ -206,14 +206,14 @@ def init():
     GPIO.setmode(GPIO.BCM)
     
     global redLedPin
-    redLedPin = 11
+    redLedPin = 17
     GPIO.setup(redLedPin, GPIO.OUT)
     GPIO.output(redLedPin, False)
 
     global greenLedPin
-    greenLedPin = 13
+    greenLedPin = 27
     GPIO.setup(greenLedPin, GPIO.OUT)
-    GPIO.output(greenLedPin, True) #TODO
+    GPIO.output(greenLedPin, False)
 
     import board
     from adafruit_bme280 import basic as adafruit_bme280
