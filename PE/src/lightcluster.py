@@ -23,19 +23,19 @@ def main():
             conn = sqlite3.connect('light.db')
     
             c = conn.cursor()
-            c.execute('SELECT id, devicename, light, timestamp FROM light ORDER BY id ASC')
+            c.execute('SELECT id, devicename, crowd_density, abright, atemp, timestamp FROM light ORDER BY id ASC')
             results = c.fetchall()
             
-            df = pd.DataFrame(columns=['id', 'devicename', 'light', 'timestamp'])
+            df = pd.DataFrame(columns=['id', 'devicename', 'crowd_density', 'abright', 'atemp', 'timestamp'])
             # print(df)
             
-            for result in results:                                
-                                
-                df = pd.concat([df, pd.DataFrame({'id': [result[0]], 'devicename': [str(result[1])], 'light': [result[2]], 'timestamp': [str(result[3])]})], ignore_index=True)
-                
+            for result in results:
+
+                df = pd.concat([df, pd.DataFrame({'id': [result[0]], 'devicename': [str(result[1])], 'crowd_density': [result[2]], 'abright': [result[3]], 'atemp': [result[4]], 'timestamp': [str(result[5])]})], ignore_index=True)
+
             # print(df)
             
-            X = df['light'].values.reshape(-1,1)
+            X = df['crowd_density', 'abright', 'atemp'].values.reshape(-1,1)
             
             # print(X)
             

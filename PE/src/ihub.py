@@ -114,7 +114,7 @@ def rhub():
 
 def cloudrelay():        
     
-    base_uri = 'http://127.20.10.2:5000/'
+    base_uri = 'http://172.20.10.2:5000/'
     globallight_uri = base_uri + 'api/globallight'
     headers = {'content-type': 'application/json'}
     

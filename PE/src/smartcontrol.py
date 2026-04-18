@@ -36,15 +36,15 @@ def main():
         cluster_label = cluster_label.strip()
         print('Cluster Label: ' + cluster_label)
         
-        smartlight = 'off'
+        smartlight = 'harsh'
         
         if cluster_label == '0':       
         
-            smartlight = 'on'
+            smartlight = 'normal'
                 
         broker = 'broker.emqx.io'
         port = 1883
-        topic = "/is4151-is5451/mockpe/smartlight"
+        topic = "/is4151-is5451/73/smartlight"
         client_id = f'python-mqtt-{random.randint(0, 10000)}'
         username = 'emqx'
         password = 'public'
