@@ -21,10 +21,10 @@ def index():
 	c.execute('SELECT id, devicename, crowd_density, abright, atemp, timestamp FROM light ORDER BY id DESC')
 	results = c.fetchall()
 	
-	html = '<html><head><title>Cloud Server</title><meta http-equiv="refresh" content="5" /></head><body><h1>Global Lights</h1><table cellspacing="1" cellpadding="3" border="1"><tr><th>ID</th><th>Device Name</th><th>Light</th><th>Timestamp</th></tr>'
+	html = '<html><head><title>Cloud Server</title><meta http-equiv="refresh" content="5" /></head><body><h1>Global Lights</h1><table cellspacing="1" cellpadding="3" border="1"><tr><th>ID</th><th>Device Name</th><th>crowd_density</th><th>abright</th><th>atemp</th><th>Timestamp</th></tr>'
 	for result in results:
 				
-		html += '<tr><td>' + str(result[0]) + '</td><td>' + str(result[1]) + '</td><td>' + str(result[2]) + '</td><td>' + str(result[3]) + '</td></tr>'
+		html += '<tr><td>' + str(result[0]) + '</td><td>' + str(result[1]) + '</td><td>' + str(result[2]) + '</td><td>' + str(result[3]) + '</td></tr>' + str(result[4]) + '</td></tr>' + str(result[5]) + '</td></tr>'
 	
 	html += '</body></html>'
 	
